@@ -1,33 +1,47 @@
-//
-//  SSP_UI_FinalApp.swift
-//  SSP_UI_Final
-//
-//  Created by HaoVo on 3/11/2025.
-//
-
 import SwiftUI
+import Combine
+
+@MainActor
+final class CubeAppModel: ObservableObject {
+    @Published var cubeSize = BoxSize(1,1,1)
+}
 
 @main
 struct SSP_UI_FinalApp: App {
-
-    @State private var appModel = AppModel()
+    @StateObject private var model = CubeAppModel()
+    @Environment(\.openWindow) private var openWindow
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .environment(appModel)
+        //---------Cube-------------
+        WindowGroup(id: "CubeWindow") {
+            //------HERE: YOU CAN SPECIFY YOUR MODEL PRESET (.USDZ) IN HIEARCHY------
+            Cube3DView(
+                modelName: "Cube",
+                size: model.cubeSize,
+                onTap: { openWindow(id: "NumpadWindow") }
+            )
+                .environmentObject(model)
         }
+        WindowGroup(id: "NumpadWindow") {
+            NumpadWindow()
+                .environmentObject(model)
+        }
+        .windowStyle(.plain)
+        .defaultSize(width: 420, height: 520)
+    }
+    
+    
+}
 
-        ImmersiveSpace(id: appModel.immersiveSpaceID) {
-            ImmersiveView()
-                .environment(appModel)
-                .onAppear {
-                    appModel.immersiveSpaceState = .open
-                }
-                .onDisappear {
-                    appModel.immersiveSpaceState = .closed
-                }
+struct NumpadWindow: View {
+    @EnvironmentObject var model: CubeAppModel
+    @Environment(\.dismissWindow) private var dismissWindow
+
+    var body: some View {
+        CubeNumpad(initial: model.cubeSize) { newSize in
+            model.cubeSize = newSize
+            dismissWindow(id: "NumpadWindow")
         }
-        .immersionStyle(selection: .constant(.mixed), in: .mixed)
-     }
+        .padding()
+    }
 }

@@ -2,7 +2,6 @@
 //  AppModel.swift
 //  SSP_UI_Final
 //
-//  Created by HaoVo on 3/11/2025.
 //
 
 import SwiftUI
